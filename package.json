@@ -1,0 +1,23 @@
+{
+  "name": "aws-docker",
+  "version": "0.0.1",
+  "description": "Ship swagger-node app to AWS ECS, APIGW and node swagger",
+  "keywords": ["AWS", "ECS", "APIGateWay", "Swagger"],
+  "author": "niquola<niquola@gmail.com>",
+  "license": "MIT",
+  "main": "app.js",
+  "dependencies": {
+    "aws-sdk": "latest"
+  },
+  "bin": {
+    "_mocha": "./bin/_mocha",
+    "mocha": "./bin/mocha"
+  },
+  "devDependencies": {
+    "mocha": "latest"
+  },
+  "scripts": {
+    "start": "node app.js",
+    "test": "swagger project test"
+  }
+}
