@@ -10,7 +10,7 @@
     "aws-sdk": "latest"
   },
   "bin": {
-    "mocha": "./bin/shipme"
+    "shipme": "./bin/shipme"
   },
   "devDependencies": {
     "mocha": "latest"
