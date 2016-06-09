@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 "use strict";
 
-let deploy = require('../src/index.js');
+let cli = require('../src/cli.js');
 
-deploy.run();
+cli.run(process.argv.slice(2));

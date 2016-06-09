@@ -22,6 +22,32 @@ function elbDef(cfg){
   };
 }
 
+
+function healthCheckDef(cfg){
+  return {
+    HealthyThreshold: 10,
+    Interval: 30,
+    Target: 'HTTP:' + cfg.port +'/__healthy',
+    Timeout: 5,
+    UnhealthyThreshold: 10
+  };
+}
+
+function configureHealthCheck(cfg, cb){
+  elb.configureHealthCheck(
+    {
+      HealthCheck: healthCheckDef(cfg),
+      LoadBalancerName: cfg.serviceName
+    },
+    function(err, data) {
+      if(err) {
+        console.log("Error while setting up health checks for ELB", err, err.stack);
+      } else {
+        cb(data);
+      }
+    });
+}
+
 function createElb(cfg, cb) {
   elb.createLoadBalancer(
     elbDef(cfg),
@@ -29,7 +55,11 @@ function createElb(cfg, cb) {
       if (err) {
         console.log("Could not create ELB:", err, er.stack);
       } else {
-        cb(data.LoadBalancerDescriptions[0]);
+        let elb = data.LoadBalancerDescriptions[0];
+        configureHealthCheck(cfg, function(hch){
+          console.log("Health Check configured", hch);
+          cb(elb);
+        });
       }
     });
 };
@@ -58,7 +88,9 @@ function updateElb(cfg, data, cb){
   let elb = data.LoadBalancerDescriptions[0];
   let listener = elb.ListenerDescriptions[0];
   if(listener && listener.Listener.InstancePort != cfg.port){
-    updateListeners(cfg, listener, function(){ cb(elb);});
+    updateListeners(cfg, listener, function(){
+      configureHealthCheck(cfg, function(){
+        cb(elb);});});
   } else {
     cb(elb);
   }
@@ -72,7 +104,8 @@ exports.ensure = function(cfg, cb) {
       if (err) {
         createElb(cfg, cb);
       } else {
-        updateElb(cfg, data, cb);
+        configureHealthCheck(cfg, function(){
+          updateElb(cfg, data, cb);});
       }
     });
 };

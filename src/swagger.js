@@ -31,9 +31,10 @@ function buildRequestParamsMap(parameters){
 }
 
 function preprocessMethod(cfg, path, method, definition){
+  var uri = definition["x-swagger-aws-uri"] || (cfg.baseUri + path);
   var integration = {
     responses: {default: {statusCode: 200}},
-    uri: cfg.baseUri + path,
+    uri: uri,
     passthroughBehavior: "when_no_match",
     type: "http",
     httpMethod: method.toUpperCase()

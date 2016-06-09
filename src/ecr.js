@@ -23,7 +23,8 @@ function createRepo(cfg, cb){
       if(err){
         console.log("Error while creating repository", err, err.stack);
       }else{
-        cb(data);
+        ensure(cfg, cb);
+        // cb(data);
       }
     });
 }

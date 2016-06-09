@@ -3,7 +3,6 @@
 let AWS = require('aws-sdk');
 let ecs = new AWS.ECS();
 
-
 function ensureTask(cfg, cb){
   createTask(cfg,cb);
   // ecs.describeTaskDefinition(
@@ -72,7 +71,8 @@ function serviceDef(cfg){
 }
 
 function createService(cfg, cb){
-  console.log("Create")
+  console.log("Create Service");
+  throw new Error("Implement it");
 }
 function updateService(cfg, cb){
   ecs.updateService(serviceDef(cfg), function(err, data) {
