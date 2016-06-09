@@ -1,6 +1,6 @@
 {
   "name": "ship-me-to-ecs",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Ship swagger-node app to AWS ECS, APIGW and node swagger",
   "keywords": ["AWS", "ECS", "APIGateWay", "Swagger"],
   "author": "niquola<niquola@gmail.com>",
