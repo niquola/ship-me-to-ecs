@@ -1,5 +1,5 @@
 {
-  "name": "aws-docker",
+  "name": "ship-me-to-ecs",
   "version": "0.0.1",
   "description": "Ship swagger-node app to AWS ECS, APIGW and node swagger",
   "keywords": ["AWS", "ECS", "APIGateWay", "Swagger"],
@@ -10,8 +10,7 @@
     "aws-sdk": "latest"
   },
   "bin": {
-    "_mocha": "./bin/_mocha",
-    "mocha": "./bin/mocha"
+    "mocha": "./bin/shipme"
   },
   "devDependencies": {
     "mocha": "latest"
