@@ -29,7 +29,7 @@ exports.updateAPI = function(){
     if(elb){
       cfg.baseUri = "http://" + elb.DNSName;
       console.log(cfg.baseUri);
-      let swagger = SWAGGER.load(cfg, './api/swagger/swagger.yaml');
+      let swagger = SWAGGER.load(cfg, cfg.swaggerPath);
       log("Prepare swagger", swagger);
       APIGW.update(cfg, swagger, function(restApi){
         log("API GateWay was updated", restApi);
@@ -66,7 +66,7 @@ exports.run = function(){
                 ECS.ensureService(cfg, function(srv){
                   log("Service was updated", srv);
                   cfg.baseUri = "http://" + elb.DNSName;
-                  let swagger = SWAGGER.load(cfg, './api/swagger/swagger.yaml');
+                  let swagger = SWAGGER.load(cfg, cfg.swaggerPath);
                   log("Prepare swagger", swagger);
                   APIGW.update(cfg, swagger, function(restApi){
                     log("API GateWay was updated", restApi);
