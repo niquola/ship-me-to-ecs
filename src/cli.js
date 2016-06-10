@@ -16,6 +16,11 @@ function swagger(){
   console.log(JSON.stringify(swagger, null, 2));
 }
 
+function api(){
+  let deploy = require('./index');
+  deploy.updateAPI();
+}
+
 function init(){
   console.log(arguments);
 }
@@ -31,6 +36,7 @@ const SUBCOMMANDS = {
            desc: 'What will happen'},
   'swagger': {fn: swagger,
               desc: 'Show your aws swagger'},
+  'api': {fn: api, desc: 'Reload API'},
   'deploy': {fn: deploy,
              desc: 'Deploy to ecs'}
 };

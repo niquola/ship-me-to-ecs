@@ -23,11 +23,28 @@ function log(msg, obj){
   console.log("-----------------------------");
 }
 
+exports.updateAPI = function(){
+  ELB.find(cfg, function(elb){
+    console.log(elb);
+    if(elb){
+      cfg.baseUri = "http://" + elb.DNSName;
+      console.log(cfg.baseUri);
+      let swagger = SWAGGER.load(cfg, './api/swagger/swagger.yaml');
+      log("Prepare swagger", swagger);
+      APIGW.update(cfg, swagger, function(restApi){
+        log("API GateWay was updated", restApi);
+      });
+    } else {
+      console.log("UPS:", elb);
+    }
+  });
+};
+
 exports.run = function(){
 
   cfg.repositoryName = cfg.serviceName;
 
-  let version = proc.execSync('git rev-parse HEAD').toString().slice(0,7) + "-" + (new Date()).toISOString().replace(/[:.]/g,'-');
+  let version = (new Date()).toISOString().replace(/[:.]/g,'-') + "-" + proc.execSync('git rev-parse HEAD').toString().slice(0,7);
 
   ECR.ensure(cfg, function(repo){
     log("Ensure repository:", repo);

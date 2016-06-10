@@ -96,6 +96,17 @@ function updateElb(cfg, data, cb){
   }
 };
 
+exports.find = function(cfg, cb) {
+  let params = {LoadBalancerNames: [cfg.serviceName]};
+  elb.describeLoadBalancers(
+    params,
+    function(err, data){
+      if (err) { console.log("Could not find ELB", err, err.stack); }
+      else {
+        cb(data.LoadBalancerDescriptions[0]);
+      }
+    });
+};
 exports.ensure = function(cfg, cb) {
   let params = {LoadBalancerNames: [cfg.serviceName]};
   elb.describeLoadBalancers(
@@ -104,8 +115,7 @@ exports.ensure = function(cfg, cb) {
       if (err) {
         createElb(cfg, cb);
       } else {
-        configureHealthCheck(cfg, function(){
-          updateElb(cfg, data, cb);});
+        updateElb(cfg, data, cb);
       }
     });
 };

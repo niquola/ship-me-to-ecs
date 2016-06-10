@@ -17,7 +17,7 @@ function transform(cfg, swagger){
       swagger.paths[k] = preprocessPath(cfg, k, swagger.paths[k]);
     }
   }
-  delete swagger.definitions;
+  // delete swagger.definitions;
   return swagger;
 };
 
@@ -25,7 +25,9 @@ function transform(cfg, swagger){
 function buildRequestParamsMap(parameters){
   var map = {};
   parameters.forEach(function(x){
-    map["integration.request.querystring."+x.name] = "method.request.querystring." + x.name ;
+    if(x.in == "query"){
+      map["integration.request.querystring."+x.name] = "method.request.querystring." + x.name ;
+    }
   });
   return map;
 }
@@ -45,7 +47,6 @@ function preprocessMethod(cfg, path, method, definition){
   }
 
   definition["x-amazon-apigateway-integration"] = integration;
-  definition.responses = {}; // fix aws
   return definition;
 }
 

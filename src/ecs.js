@@ -53,7 +53,8 @@ function ensureService(cfg, cb){
   ecs.describeServices(
     {services: [cfg.serviceName], cluster: cfg.cluster},
     function(err, data){
-      if(err){
+      console.log("SERVICE:", data);
+      if(err || data.services.length == 0){
         createService(cfg, cb);
       } else {
         updateService(cfg, cb);
@@ -70,9 +71,34 @@ function serviceDef(cfg){
    };
 }
 
+
 function createService(cfg, cb){
-  console.log("Create Service");
-  throw new Error("Implement it");
+  let serv = {
+    desiredCount: 1,
+    serviceName: cfg.serviceName,
+    taskDefinition: cfg.serviceName,
+    cluster: cfg.cluster,
+    role: 'ecs_service_role',
+    deploymentConfiguration: {
+      maximumPercent: 200,
+      minimumHealthyPercent: 100
+    },
+    loadBalancers:  [{
+      containerName: cfg.serviceName,
+      containerPort: cfg.containerPort,
+      loadBalancerName: cfg.serviceName
+    }]
+  };
+
+
+  ecs.createService(serv, function(err, data) {
+    if (err){
+      console.log("Error while creating ECS service", err, err.stack);
+    } else {
+      console.log("Created ECS service:", data);
+      cb(data);
+    }
+  });
 }
 function updateService(cfg, cb){
   ecs.updateService(serviceDef(cfg), function(err, data) {
