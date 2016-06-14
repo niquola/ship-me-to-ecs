@@ -29,6 +29,13 @@ function plan(){
   console.log(arguments);
 }
 
+function lambda(){
+  let lambda = require('./lambda');
+  let fs = require('fs');
+  let cfg = JSON.parse(fs.readFileSync('./aws.json'));
+  lambda.run(cfg);
+}
+
 const SUBCOMMANDS = {
   'init': {fn: init,
            desc: 'Init your project'},
@@ -37,6 +44,7 @@ const SUBCOMMANDS = {
   'swagger': {fn: swagger,
               desc: 'Show your aws swagger'},
   'api': {fn: api, desc: 'Reload API'},
+  'lambda': {fn: lambda, desc: 'Deploy lambda'},
   'deploy': {fn: deploy,
              desc: 'Deploy to ecs'}
 };
