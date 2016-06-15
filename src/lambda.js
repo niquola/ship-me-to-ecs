@@ -8,6 +8,61 @@ let Promise = require("bluebird");
 let bash = shell.bash;
 
 
+// function createAuthorizer(cfg, lambda, uri) {
+//     var API_GATEWAY = new AWS.APIGateway({
+//         apiVersion: '2015-07-09'
+//     });
+//     console.log("+++++++++++++++++++++++++");
+//     console.log("Deploy Custom Authorizer " + lambda.name);
+//     console.log("+++++++++++++++++++++++++");
+
+//     var params = {
+//         restApiId: cfg.restApiId
+//     };
+//     apigateway.getAuthorizers(params, function(err, data) {
+//         if (err) console.log(err, err.stack); // an error occurred
+//         else     console.log(data);           // successful response
+//     });
+
+//     if (true)
+//     {
+//         var params = {
+//             authorizerUri: uri,
+//             identitySource: 'method.request.header.Authorization',
+//             name: lambda.name,
+//             restApiId: cfg.restApiId,
+//             type: 'TOKEN'
+//         };
+//         apigateway.createAuthorizer(params, function(err, data) {
+//             if (err) {
+//                 console.log(err, err.stack);
+//             } else {
+//                 console.log("Custom Authorizer " + lambda.name + " was created", data);
+//             }
+//         });
+//     } else {
+//         var params = {
+//             authorizerId: 'STRING_VALUE', /* required */
+//             restApiId: 'STRING_VALUE', /* required */
+//             patchOperations: [
+//                 {
+//                     from: 'STRING_VALUE',
+//                     op: 'add | remove | replace | move | copy | test',
+//                     path: 'STRING_VALUE',
+//                     value: 'STRING_VALUE'
+//                 },
+//                 /* more items */
+//             ]
+//         };
+//         apigateway.updateAuthorizer(params, function(err, data) {
+//             if (err) console.log(err, err.stack); // an error occurred
+//             else     console.log(data);           // successful response
+//         });
+
+//     }
+// }
+
+
 function fnExists(LAMBDA, name){
   return new Promise(function(resolve, reject){
     LAMBDA.getFunction({FunctionName: name}, function(err, data){
