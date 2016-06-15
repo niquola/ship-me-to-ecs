@@ -9,6 +9,7 @@
   "dependencies": {
     "aws-sdk": "latest",
     "js-yaml": "latest",
+    "bluebird": "latest",
     "node-zip": "latest"
   },
   "bin": {
