@@ -26,15 +26,15 @@ function fullName(params){
 }
 
 function build(params, cb){
-  docker(["build","-t", fullName(params) ,"."], cb);
+  return docker(["build","-t", fullName(params) ,"."], cb);
 }
 
 function login(params, cb){
-  docker(["login", "-u", params.user, "-p", params.password, "-e", "none", params.url], cb);
+  return docker(["login", "-u", params.user, "-p", params.password, "-e", "none", params.url], cb);
 }
 
 function push(params, cb){
-  docker(["push", fullName(params)], cb);
+  return docker(["push", fullName(params)], cb);
 }
 
 exports.docker = docker;

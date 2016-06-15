@@ -2,6 +2,7 @@
 
 let AWS = require('aws-sdk');
 let elb = new AWS.ELB({});
+let Promise = require("bluebird");
 
 function listenerDef(cfg){
   return {
@@ -48,12 +49,13 @@ function configureHealthCheck(cfg, cb){
     });
 }
 
-function createElb(cfg, cb) {
+function createElb(cfg, cb, errb) {
   elb.createLoadBalancer(
     elbDef(cfg),
     function(err, data){
       if (err) {
         console.log("Could not create ELB:", err, er.stack);
+        errb(err);
       } else {
         let elb = data.LoadBalancerDescriptions[0];
         configureHealthCheck(cfg, function(hch){
@@ -64,13 +66,15 @@ function createElb(cfg, cb) {
     });
 };
 
-function updateListeners(cfg, listener, cb){
+function updateListeners(cfg, listener, cb, errb){
   console.log("Update listeners");
   elb.deleteLoadBalancerListeners(
     {LoadBalancerName: cfg.serviceName, LoadBalancerPorts: [80]},
     function(err, data) {
-      if (err) console.log("ERROR while deleting ELB ports", err, err.stack);
-      else {
+      if (err){
+        console.log("ERROR while deleting ELB ports", err, err.stack);
+        errb(err);
+      } else {
         console.log("ELB Listener deleted", data);
         elb.createLoadBalancerListeners(
           {LoadBalancerName: cfg.serviceName, Listeners: [listenerDef(cfg)]},
@@ -98,24 +102,31 @@ function updateElb(cfg, data, cb){
 
 exports.find = function(cfg, cb) {
   let params = {LoadBalancerNames: [cfg.serviceName]};
-  elb.describeLoadBalancers(
-    params,
-    function(err, data){
-      if (err) { console.log("Could not find ELB", err, err.stack); }
-      else {
-        cb(data.LoadBalancerDescriptions[0]);
-      }
-    });
+  return new Promise(function (resolve, reject) {
+    elb.describeLoadBalancers(
+      params,
+      function(err, data){
+        if (err) {
+          console.log("Could not find ELB", err, err.stack);
+          reject(err);
+        }
+        else {
+          resolve(data.LoadBalancerDescriptions[0]);
+        }
+      });
+  });
 };
 exports.ensure = function(cfg, cb) {
   let params = {LoadBalancerNames: [cfg.serviceName]};
-  elb.describeLoadBalancers(
-    params,
-    function(err, data){
-      if (err) {
-        createElb(cfg, cb);
-      } else {
-        updateElb(cfg, data, cb);
-      }
-    });
+  return new Promise(function (resolve, reject) {
+    elb.describeLoadBalancers(
+      params,
+      function(err, data){
+        if (err) {
+          createElb(cfg, resolve, reject);
+        } else {
+          updateElb(cfg, data, resolve, reject);
+        }
+      });
+  });
 };

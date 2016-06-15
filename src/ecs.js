@@ -2,28 +2,22 @@
 
 let AWS = require('aws-sdk');
 let ecs = new AWS.ECS();
+let Promise = require("bluebird");
 
 function ensureTask(cfg, cb){
-  createTask(cfg,cb);
-  // ecs.describeTaskDefinition(
-  //   {taskDefinition: cfg.serviceName},
-  //   function(err, data) {
-  //     if(err){
-  //       createTask(cfg,cb);
-  //     } else {
-  //       createTask(cfg, cb);
-  //     }
-  //   });
-}
-
-function createTask(cfg, cb){
-  ecs.registerTaskDefinition(
-    taskDef(cfg),
-    function(err, data){
-      if(err){ console.log("Error while creating/updating ECS task: ", err, err.stack); }
-      else{ cb(data); }
-    }
-  );
+  return new Promise(function(resolve, reject){
+    ecs.registerTaskDefinition(
+      taskDef(cfg),
+      function(err, data){
+        if(err){
+          console.log("Error while creating/updating ECS task: ", err, err.stack);
+          reject(err);
+        } else {
+          resolve(data);
+        }
+      }
+    );
+  });
 }
 
 function containerDef(cfg){
@@ -50,17 +44,20 @@ function taskDef(cfg){
 }
 
 function ensureService(cfg, cb){
-  ecs.describeServices(
-    {services: [cfg.serviceName], cluster: cfg.cluster},
-    function(err, data){
-      console.log("SERVICE:", data);
-      if(err || data.services.length == 0){
-        createService(cfg, cb);
-      } else {
-        updateService(cfg, cb);
+
+  return new Promise(function(resolve, reject){
+    ecs.describeServices(
+      {services: [cfg.serviceName], cluster: cfg.cluster},
+      function(err, data){
+        console.log("SERVICE:", data);
+        if(err || data.services.length == 0){
+          createService(cfg, resolve, reject);
+        } else {
+          updateService(cfg, resolve, reject);
+        }
       }
-    }
-  );
+    );
+  });
 }
 function serviceDef(cfg){
    return {
@@ -72,7 +69,7 @@ function serviceDef(cfg){
 }
 
 
-function createService(cfg, cb){
+function createService(cfg, cb, errb){
   let serv = {
     desiredCount: 1,
     serviceName: cfg.serviceName,
@@ -94,16 +91,22 @@ function createService(cfg, cb){
   ecs.createService(serv, function(err, data) {
     if (err){
       console.log("Error while creating ECS service", err, err.stack);
+      errb(err);
     } else {
       console.log("Created ECS service:", data);
       cb(data);
     }
   });
 }
-function updateService(cfg, cb){
+function updateService(cfg, cb, errb){
   ecs.updateService(serviceDef(cfg), function(err, data) {
-    if (err) console.log('ERROR while updating service:', err, err.stack);
-    else  cb(data);
+    if (err) {
+      console.log('ERROR while updating service:', err, err.stack); 
+      errb(err);
+    }
+    else {
+      cb(data); 
+    }
   });
 }
 

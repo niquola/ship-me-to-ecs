@@ -16,27 +16,26 @@ let DOCKER = require('./docker');
 let ECR = require('./ecr');
 let ECS = require('./ecs');
 let APIGW = require('./apigw');
+let LAMBDA = require('./lambda');
 
 function log(msg, obj){
-  console.log("-----------------------------");
+  console.log("==============================");
   console.log(msg, JSON.stringify(obj, null, 2));
   console.log("-----------------------------");
 }
 
 exports.updateAPI = function(){
-  ELB.find(cfg, function(elb){
-    console.log(elb);
-    if(elb){
-      cfg.baseUri = "http://" + elb.DNSName;
-      console.log(cfg.baseUri);
-      let swagger = SWAGGER.load(cfg, cfg.swaggerPath);
-      log("Prepare swagger", swagger);
-      APIGW.update(cfg, swagger, function(restApi){
-        log("API GateWay was updated", restApi);
-      });
-    } else {
-      console.log("UPS:", elb);
-    }
+  ELB.find(cfg).then(function(elb){
+    cfg.baseUri = "http://" + elb.DNSName;
+    console.log(cfg.baseUri);
+    let swagger = SWAGGER.load(cfg, cfg.swaggerPath);
+    log("Prepare swagger", swagger);
+    return APIGW.update(cfg, swagger);
+  }).then(function(restApi){
+    log("API GateWay was updated", restApi);
+    return APIGW.ensureAuthorizers(cfg);
+  }).then(function(auth){
+    console.log("Done!");
   });
 };
 
@@ -46,38 +45,44 @@ exports.run = function(){
 
   let version = (new Date()).toISOString().replace(/[:.]/g,'-') + "-" + proc.execSync('git rev-parse HEAD').toString().slice(0,7);
 
-  ECR.ensure(cfg, function(repo){
+  ECR.ensure(cfg).then(function(repo){
     log("Ensure repository:", repo);
-    let image = {imageName: repo.repositoryUri, version: version};
-    DOCKER.build(image, function(){
-      ECR.getLogin(repo, function(cred){
-        log("REPO credentials", repo);
-        DOCKER.login(cred, function(){
-          log("Logged in with", cred);
-          DOCKER.push(image, function(){
-            cfg.image = image;
-            log("Image was pushed", image);
-            ECS.ensureTask(cfg, function(task){
-              cfg.task = task;
-              log("Task was updated", task);
-              ELB.ensure(cfg, function(elb){
-                // console.log(elb);
-                log("ELB configured: ", elb);
-                ECS.ensureService(cfg, function(srv){
-                  log("Service was updated", srv);
-                  cfg.baseUri = "http://" + elb.DNSName;
-                  let swagger = SWAGGER.load(cfg, cfg.swaggerPath);
-                  log("Prepare swagger", swagger);
-                  APIGW.update(cfg, swagger, function(restApi){
-                    log("API GateWay was updated", restApi);
-                  });
-                });
-              });
-            });
-          });
-        });
-      });
-    });
+    cfg.repo = repo;
+    cfg.image = {imageName: repo.repositoryUri, version: version};
+    return DOCKER.build(cfg.image);
+  }).then(function(){
+    return ECR.getLogin(cfg.repo);
+  }).then(function(cred){
+    log("REPO credentials", cred);
+    cfg.repo.cred = cred;
+    return DOCKER.login(cred);
+  }).then(function(){
+    log("Logged in with", cfg.repo.cred);
+    return DOCKER.push(cfg.image);
+  }).then(function(){
+    log("Image was pushed", cfg.image);
+    return ECS.ensureTask(cfg);
+  }).then(function(task){
+    cfg.task = task;
+    log("Task was updated", task);
+    return ELB.ensure(cfg);
+  }).then(function(elb){
+    log("ELB configured: ", elb);
+    cfg.baseUri = "http://" + elb.DNSName;
+    return ECS.ensureService(cfg);
+  }).then(function(srv){
+    log("Service was updated", srv);
+    let swagger = SWAGGER.load(cfg, cfg.swaggerPath);
+    log("Prepare swagger", swagger);
+    return APIGW.update(cfg, swagger);
+  }).then(function(restApi){
+    log("API GateWay was updated", restApi);
+    return LAMBDA.deploy(cfg);
+  }).then(function(lambda){
+    log("Lambda was updated", lambda);
+    return APIGW.ensureAuthorizers(cfg);
+  }).then(function(){
+    log("Alles", {});
   });
 };
 
