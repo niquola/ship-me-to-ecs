@@ -1,7 +1,7 @@
 "use strict";
 
 let proc = require('child_process');
-var Promise = require("bluebird");
+let Promise = require("bluebird");
 
 function bash(cmd, cb){
   console.log("EXECUTE:", cmd);

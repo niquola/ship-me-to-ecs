@@ -2,16 +2,21 @@
 
 let fs = require('fs');
 let proc = require('child_process');
+let Promise = require("bluebird");
 
 function docker(args, cb){
   console.log("docker " + args.join(" "));
-  let buildProc = proc.spawn("docker", args);
-  buildProc.stdout.pipe(process.stdout);
-  buildProc.stderr.pipe(process.stderr);
-  buildProc.on('exit', function(code){
-    if(code === 0){
-      cb();
-    }
+  return new Promise(function (resolve, reject) {
+    let buildProc = proc.spawn("docker", args);
+    buildProc.stdout.pipe(process.stdout);
+    buildProc.stderr.pipe(process.stderr);
+    buildProc.on('exit', function(code){
+      if(code === 0){
+        resolve(code);
+      }else {
+        reject(code);
+      }
+    });
   });
 }
 

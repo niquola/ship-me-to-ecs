@@ -76,5 +76,6 @@ function run(cfg){
   }else {
     console.log("No lambdas found in config");
   }
-}
+};
+
 exports.run = run;
