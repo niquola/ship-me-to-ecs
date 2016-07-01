@@ -54,7 +54,7 @@ function createElb(cfg, cb, errb) {
     elbDef(cfg),
     function(err, data){
       if (err) {
-        console.log("Could not create ELB:", err, er.stack);
+        console.log("Could not create ELB:", err, err.stack);
         errb(err);
       } else {
         console.log(data);
