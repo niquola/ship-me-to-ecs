@@ -57,6 +57,7 @@ function createElb(cfg, cb, errb) {
         console.log("Could not create ELB:", err, er.stack);
         errb(err);
       } else {
+        console.log(data);
         let elb = data.LoadBalancerDescriptions[0];
         configureHealthCheck(cfg, function(hch){
           console.log("Health Check configured", hch);

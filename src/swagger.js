@@ -61,11 +61,17 @@ function preprocessMethod(cfg, path, method, definition){
     integration.requestParameters = buildRequestParamsMap(definition.parameters);
   }
 
-  definition["responses"]["200"]["headers"] = {
-    "Access-Control-Allow-Origin": {type: "string"},
-    "Access-Control-Allow-Methods": {type: "string"},
-    "Access-Control-Allow-Headers": {type: "string"}
-  };
+  var responces = definition["responses"] || {};
+  for(var resp_key in responces){
+    if( responces.hasOwnProperty(resp_key) ) {
+      var resp_body = responces[resp_key];
+      resp_body.headers = {
+        "Access-Control-Allow-Origin": {type: "string"},
+        "Access-Control-Allow-Methods": {type: "string"},
+        "Access-Control-Allow-Headers": {type: "string"}
+      };
+    }
+  }
 
   definition["x-amazon-apigateway-integration"] = integration;
   return definition;
@@ -111,7 +117,7 @@ function preprocessPath(cfg, path, methods){
         "default": {
           "statusCode": "200",
           "responseParameters": {
-            "method.response.header.Access-Control-Allow-Methods": '*',
+            "method.response.header.Access-Control-Allow-Methods": "'*'",
             "method.response.header.Access-Control-Allow-Headers": CORS_ALLOW_HEADERS,
             "method.response.header.Access-Control-Allow-Origin": "'*'"
           }

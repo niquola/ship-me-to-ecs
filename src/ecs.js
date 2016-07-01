@@ -50,7 +50,7 @@ function ensureService(cfg, cb){
       {services: [cfg.serviceName], cluster: cfg.cluster},
       function(err, data){
         console.log("SERVICE:", data);
-        if(err || data.services.length == 0){
+        if(err || data.services.length == 0 || data.services[0].status != 'ACTIVE'){
           createService(cfg, resolve, reject);
         } else {
           updateService(cfg, resolve, reject);
